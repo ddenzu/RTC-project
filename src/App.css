@@ -30,7 +30,16 @@ body, html {
   bottom: 0;
   z-index: 1;
 }
-
+.file-select {
+  width: 25%;
+  margin: 0 auto;
+  padding-left: 5px;
+  padding-right: 5px;
+  border: 1px solid white;
+  border-radius: 10px;
+  color: white;
+  margin-right: 3px;
+}
 .toggle {
   position: relative;
   display: inline-block;
@@ -66,6 +75,54 @@ body, html {
   background-color: #888; /* 스위치 내부 원의 색상 설정 */
   border-radius: 50%; /* 원 모양 설정 */
   transition: 0.4s;
+}
+.range-select{
+  width: 25%;
+  margin: 0 auto;
+}
+.color-selector {
+  display: flex;
+  align-items: center;
+  margin-right: 10px;
+}
+
+.color-option {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  margin-right: 10px;
+  cursor: pointer;
+  margin: 10 auto;
+}
+@media screen and (max-width: 710px) {
+  .color-selector {
+    margin: 0;
+  }
+  .color-option {
+    margin-right: 5px;
+  }
+}
+.color-underline {
+  border: 2px solid white;
+}
+.red {
+  background-color: red;
+}
+
+.yellow {
+  background-color: yellow;
+}
+
+.blue {
+  background-color: blue;
+}
+
+.black {
+  background-color: black;
+}
+
+.white {
+  background-color: white;
 }
 
 input:checked + .slider {

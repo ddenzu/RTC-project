@@ -1,5 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './App.css';
+import { getValue } from '@testing-library/user-event/dist/utils';
 
 const App = () => {
   const canvasRef = useRef(null); 
@@ -11,6 +12,22 @@ const App = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingPaths, setDrawingPaths] = useState([]);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [selectedColor, setSelectedColor] = useState('black');
+  const [selectedWidth, setSelectedWidth] = useState(2);
+
+  const handleColorClick = (color) => {
+    setSelectedColor(color);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.strokeStyle = color;
+  };
+
+  const handleWidthClick = (event) => {
+    setSelectedWidth(event.target.value);
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    ctx.lineWidth = event.target.value;
+  };
 
   const handleImageChange = (e) => {
     const file = e.target.files[0];
@@ -22,15 +39,14 @@ const App = () => {
       reader.readAsDataURL(file);
     }
   };
+  
 
   const setCanvasDimensions = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const { innerWidth, innerHeight } = window;
-
     canvas.width = innerWidth;
     canvas.height = innerHeight;
-
     if (image) {
       const img = new Image();
       img.onload = () => {
@@ -40,7 +56,7 @@ const App = () => {
     } else {
       ctx.lineCap = 'round';
       ctx.strokeStyle = 'black';
-      ctx.lineWidth = 3;
+      ctx.lineWidth = 2;
     }
   };
 
@@ -194,7 +210,31 @@ const App = () => {
   return (
     <div className="App" style={{ position: 'relative' }}>
       <div className='control-bar'>
-        <input type="file" onChange={handleImageChange} />
+        <input type="file" className='file-select' onChange={handleImageChange} />
+        <input type="range" className='range-select' min="1" max="10" step="1" value={selectedWidth}
+        onChange={handleWidthClick}/>
+        <div className="color-selector">
+        <div
+          className={`color-option red ${selectedColor === 'red' ? 'color-underline' : ''}`}
+          onClick={() => handleColorClick('red')}
+        ></div>
+        <div
+          className={`color-option yellow ${selectedColor === 'yellow' ? 'color-underline' : ''}`}
+          onClick={() => handleColorClick('yellow')}
+        ></div>
+        <div
+          className={`color-option blue ${selectedColor === 'blue' ? 'color-underline' : ''}`}
+          onClick={() => handleColorClick('blue')}
+        ></div>
+        <div
+          className={`color-option black ${selectedColor === 'black' ? 'color-underline' : ''}`}
+          onClick={() => handleColorClick('black')}
+        ></div>
+        <div
+          className={`color-option white ${selectedColor === 'white' ? 'color-underline' : ''}`}
+          onClick={() => handleColorClick('white')}
+        ></div>
+      </div>
         <label className="toggle">
           <input type="checkbox" onChange={handleToggleChange} checked={isToggleActive} />
           <span className="slider"></span>
