@@ -1,6 +1,6 @@
 import React, { useRef, useEffect, useState } from 'react';
 import './App.css';
-import { getValue } from '@testing-library/user-event/dist/utils';
+import { debounce } from 'lodash'; 
 
 const App = () => {
   const canvasRef = useRef(null); 
@@ -14,7 +14,76 @@ const App = () => {
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   const [selectedColor, setSelectedColor] = useState('black');
   const [selectedWidth, setSelectedWidth] = useState(2);
+  const [isWebSocketOpen, setIsWebSocketOpen] = useState(false);
+  const [drawingData, setdrawingData] = useState({});
+  useEffect(() => {
+    const ws = new WebSocket('ws://localhost:8000');
+    ws.onopen = () => {
+      console.log('웹 소켓 연결이 열렸습니다.');
+      setIsWebSocketOpen(true);
+    };
+    console.log(drawingPaths)
+    ws.onmessage = (event) => {
+      const receivedData = JSON.parse(event.data);
+      setSelectedColor(receivedData.color);
+      setSelectedWidth(receivedData.width);
+      setdrawingData(receivedData.path)
 
+      // setDrawingPaths([...drawingPaths,{ path: receivedData.path.path, color: receivedData.color, width: receivedData.width }])
+      const ctx = canvasRef.current.getContext('2d');
+      ctx.strokeStyle = receivedData.color;
+      ctx.lineWidth = receivedData.width;
+      ctx.beginPath();
+      receivedData.path.path.forEach((point, index) => {
+        if (index === 0) {
+          ctx.moveTo(point.x, point.y);
+        } else {
+          ctx.lineTo(point.x, point.y);
+          ctx.stroke();
+        }
+      });
+      setDrawingPaths(prevPaths => [...prevPaths, receivedData.path]);
+    };
+  }, []);
+  // setDrawingPaths([...drawingPaths,drawingData])
+  const sendDataToWebSocket = (data) => {
+    const ws = new WebSocket('ws://localhost:8000');
+    if (ws.readyState === WebSocket.OPEN) {
+      ws.send(JSON.stringify(data));
+    } else {
+      console.log('WebSocket 연결이 아직 완료되지 않았습니다.');
+      // 연결이 완료되면 데이터를 보내도록 대기
+      ws.addEventListener('open', () => {
+        ws.send(JSON.stringify(data));
+      });
+    }
+  };
+  const sendImageMoveData = () => {
+    if (isWebSocketOpen) {
+      const data = {
+        type: 'image_move',
+        // image: image,
+        position: { x: position.x, y: position.y }, 
+      };
+      sendDataToWebSocket(data);
+    } else {
+      console.log('WebSocket 연결이 완료되지 않았습니다.');
+    }
+  };
+  
+  const sendDrawData = () => {
+    if (isWebSocketOpen) {
+      const data = {
+        type: 'draw',
+        color: selectedColor,
+        width: selectedWidth,
+        path: drawingPaths[drawingPaths.length - 1],
+      };
+      sendDataToWebSocket(data);
+    } else {
+      console.log('WebSocket 연결이 완료되지 않았습니다.');
+    }
+  };
   const handleColorClick = (color) => {
     setSelectedColor(color);
     const canvas = canvasRef.current;
@@ -39,7 +108,6 @@ const App = () => {
       reader.readAsDataURL(file);
     }
   };
-  
 
   const setCanvasDimensions = () => {
     const canvas = canvasRef.current;
@@ -55,8 +123,8 @@ const App = () => {
       img.src = image;
     } else {
       ctx.lineCap = 'round';
-      ctx.strokeStyle = 'black';
-      ctx.lineWidth = 2;
+      ctx.strokeStyle = selectedColor;
+      ctx.lineWidth = selectedWidth;
     }
   };
 
@@ -72,23 +140,26 @@ const App = () => {
     };
   }, []);
 
-  const drawImageOnCanvas = (ctx, img) => {
-    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height); 
-    ctx.drawImage(img, position.x, position.y, img.width/3, img.height/3); 
+  const drawPath = (ctx, path) => {
+    ctx.strokeStyle = path.color;
+    ctx.lineWidth = path.width;
+    ctx.beginPath();
+    path.path.forEach((point, index) => {
+      if (index === 0) {
+        ctx.moveTo(point.x, point.y);
+      } else {
+        ctx.lineTo(point.x, point.y);
+        ctx.stroke();
+      }
+    });
+  };
 
+  const drawImageOnCanvas = (ctx, img) => {
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    ctx.drawImage(img, position.x, position.y, img.width / 3, img.height / 3);
 
     drawingPaths.forEach((path) => {
-      ctx.strokeStyle = path.color;
-      ctx.lineWidth = path.width;
-      ctx.beginPath();
-      path.path.forEach((point, index) => {
-        if (index === 0) {
-          ctx.moveTo(point.x, point.y);
-        } else {
-          ctx.lineTo(point.x, point.y);
-          ctx.stroke();
-        }
-      });
+      drawPath(ctx, path);
     });
   };
 
@@ -116,10 +187,6 @@ const App = () => {
   };
 
 
-  const handleMouseUp = () => {
-    setIsDragging(false); 
-  };
-
   const handleMouseMove = (e) => {
     if (!isDragging || !isToggleActive) return; 
 
@@ -146,6 +213,11 @@ const App = () => {
     img.src = image;
   };
 
+  const handleMouseUp = () => {
+    setIsDragging(false);
+    sendImageMoveData();
+  };
+
   const handleMouseMove2 = (e) => {
     if (!isDrawing) return;
 
@@ -164,15 +236,12 @@ const App = () => {
       undoLastPath(); 
     }
   };
-  
+
   const undoLastPath = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
-
     const lastPath = drawingPaths.pop();
-
     setDrawingPaths([...drawingPaths]);
-
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     setCanvasDimensions();
     drawingPaths.forEach((path) => {
@@ -192,6 +261,7 @@ const App = () => {
 
   const handleMouseUp2 = () => {
     setIsDrawing(false); 
+    sendDrawData();
   };
   const handleToggleChange = () => {
     setIsToggleActive(!isToggleActive);
@@ -206,6 +276,36 @@ const App = () => {
       window.removeEventListener('keydown', handleKeyDown);
     };
   }, [drawingPaths]);
+
+  useEffect(() => {
+    const handleResizeEnd = debounce(() => {
+      redrawCanvas();
+    }, 300);
+  
+    const redrawCanvas = () => {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      setCanvasDimensions();
+    
+      if (image) {
+        const img = new Image();
+        img.onload = () => {
+          drawImageOnCanvas(ctx, img);
+        };
+        img.src = image;
+      }
+    
+      drawingPaths.forEach((path) => {
+        drawPath(ctx, path);
+      });
+    };
+  
+    window.addEventListener('resize', handleResizeEnd);
+    return () => {
+      window.removeEventListener('resize', handleResizeEnd);
+    };
+  }, [image, drawingPaths, imagePosition]);
 
   return (
     <div className="App" style={{ position: 'relative' }}>
