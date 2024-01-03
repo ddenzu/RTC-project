@@ -16,6 +16,7 @@ const App = () => {
   const [selectedWidth, setSelectedWidth] = useState(2);
   const [isWebSocketOpen, setIsWebSocketOpen] = useState(false);
   const [drawingData, setdrawingData] = useState({});
+
   useEffect(() => {
     const ws = new WebSocket('ws://localhost:8000');
     ws.onopen = () => {
@@ -24,28 +25,42 @@ const App = () => {
     };
     console.log(drawingPaths)
     ws.onmessage = (event) => {
-      const receivedData = JSON.parse(event.data);
-      setSelectedColor(receivedData.color);
-      setSelectedWidth(receivedData.width);
-      setdrawingData(receivedData.path)
 
-      // setDrawingPaths([...drawingPaths,{ path: receivedData.path.path, color: receivedData.color, width: receivedData.width }])
-      const ctx = canvasRef.current.getContext('2d');
-      ctx.strokeStyle = receivedData.color;
-      ctx.lineWidth = receivedData.width;
-      ctx.beginPath();
-      receivedData.path.path.forEach((point, index) => {
-        if (index === 0) {
-          ctx.moveTo(point.x, point.y);
-        } else {
-          ctx.lineTo(point.x, point.y);
-          ctx.stroke();
-        }
-      });
-      setDrawingPaths(prevPaths => [...prevPaths, receivedData.path]);
+      const receivedData = JSON.parse(event.data);
+
+      if (receivedData.type === 'image_move') {
+        const imageUrl = receivedData.image;
+        const img = new Image();
+        img.onload = () => {
+          const ctx = canvasRef.current.getContext('2d');
+          ctx.drawImage(img, 0, 0, img.width / 3, img.height / 3);
+          setImage(imageUrl)
+        };
+        img.src = imageUrl;
+        return;
+      }
+      if (receivedData.type === 'draw') {
+        setSelectedColor(receivedData.color);
+        setSelectedWidth(receivedData.width);
+        setdrawingData(receivedData.path);
+    
+        const ctx = canvasRef.current.getContext('2d');
+        ctx.strokeStyle = receivedData.color;
+        ctx.lineWidth = receivedData.width;
+        ctx.beginPath();
+        receivedData.path.path.forEach((point, index) => {
+          if (index === 0) {
+            ctx.moveTo(point.x, point.y);
+          } else {
+            ctx.lineTo(point.x, point.y);
+            ctx.stroke();
+          }
+        });
+        setDrawingPaths(prevPaths => [...prevPaths, receivedData.path]);
+      }
     };
   }, []);
-  // setDrawingPaths([...drawingPaths,drawingData])
+
   const sendDataToWebSocket = (data) => {
     const ws = new WebSocket('ws://localhost:8000');
     if (ws.readyState === WebSocket.OPEN) {
@@ -62,8 +77,7 @@ const App = () => {
     if (isWebSocketOpen) {
       const data = {
         type: 'image_move',
-        // image: image,
-        position: { x: position.x, y: position.y }, 
+        image: image,
       };
       sendDataToWebSocket(data);
     } else {
@@ -84,6 +98,7 @@ const App = () => {
       console.log('WebSocket 연결이 완료되지 않았습니다.');
     }
   };
+
   const handleColorClick = (color) => {
     setSelectedColor(color);
     const canvas = canvasRef.current;
@@ -108,6 +123,11 @@ const App = () => {
       reader.readAsDataURL(file);
     }
   };
+  useEffect(() => {
+    if (image !== null) {
+      sendImageMoveData();
+    }
+  }, [image])
 
   const setCanvasDimensions = () => {
     const canvas = canvasRef.current;
@@ -189,7 +209,6 @@ const App = () => {
 
   const handleMouseMove = (e) => {
     if (!isDragging || !isToggleActive) return; 
-
     const canvas = canvasRef.current;
     const rect = canvas.getBoundingClientRect();
     const x = e.clientX - rect.left - mousePosition.x;
@@ -215,7 +234,6 @@ const App = () => {
 
   const handleMouseUp = () => {
     setIsDragging(false);
-    sendImageMoveData();
   };
 
   const handleMouseMove2 = (e) => {
@@ -280,7 +298,13 @@ const App = () => {
   useEffect(() => {
     const handleResizeEnd = debounce(() => {
       redrawCanvas();
-    }, 300);
+      setTimeout(() => {
+        setImagePosition(prevPosition => ({
+          x: prevPosition.x + 1,
+          y: prevPosition.y
+        }));
+      }, 100);
+    }, 100);
   
     const redrawCanvas = () => {
       const canvas = canvasRef.current;
@@ -299,6 +323,7 @@ const App = () => {
       drawingPaths.forEach((path) => {
         drawPath(ctx, path);
       });
+      
     };
   
     window.addEventListener('resize', handleResizeEnd);
