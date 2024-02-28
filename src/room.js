@@ -272,6 +272,7 @@ const Room = () => {
     if (e.ctrlKey && e.key === 'z') {
       console.log(drawingPaths)
       undoLastPath(); 
+      undoLastPath();
     }
   };
 

@@ -9,38 +9,45 @@ const App = () => {
   const [inputValue, setInputValue] = useState('');
   const navigate = useNavigate(); // useNavigate 훅을 사용하여 페이지 이동 처리
   // const socket = io("http://localhost:8080");
+  const [roomList, setRoomList] = useState();
 
+  useEffect(() => {
+    setTimeout(() => {
+      fetchData();
+    }, 1000); // 0.1초를 밀리초로 변환하여 전달
+  }, []);
+
+  useEffect(()=>{
+    console.log(roomList)
+  }, [roomList])
+
+  const fetchData = async () => {
+    try {
+      const response = await fetch('http://localhost:8080/data');
+      if (!response.ok) {
+        throw new Error('Failed to fetch roomList');
+      }
+      const roomListData = await response.json();
+      setRoomList(roomListData);
+    } catch (error) {
+      console.error('Error fetching roomList:', error);
+    }
+  };
   const handleButtonClick = async () => {
     try {
       if (!roomName) {
         alert('방 제목을 지정해 주세요.');
         return;
       }
-      // const response = await fetch('http://localhost:8080/create-room', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({ roomName }),
-      // });
-      // if (response.ok) {
-      //   const data = await response.json();
-      //   if (data === '이미 존재하는 방 제목') {
-      //     alert('이미 존재하는 방 제목 입니다.');
-      //     setRoomName('');
-      //   } else {
-      //     console.log(data)
-      //     return navigate('/room', { state: { roomName, roomNumber } });
-      //   }
-      // } else {
-      //   throw new Error('서버 응답 오류');
-      // }
       return navigate('/room', { state: { roomName } });
     } catch (error) {
       console.error(error);
     }
   };
-  
+  const handleJoinRoom = (roomName) => {
+    setRoomName(roomName);
+    navigate('/room', { state: { roomName } });
+  };
 
   return (
     <Routes>
@@ -53,6 +60,13 @@ const App = () => {
             onChange={(e) => setRoomName(e.target.value)}
           />
           <button onClick={handleButtonClick}>Send</button>
+          <h2>Room List:</h2>
+          {roomList && Object.keys(roomList).map((key, index) => (
+            <div key={index}>
+              방제: {key}, 참가자: {roomList[key]}
+              <button onClick={() => handleJoinRoom(key)}>참가</button>
+            </div>
+          ))}
         </div>
       }/>
       <Route path='/room' element={<Room/>}/>
