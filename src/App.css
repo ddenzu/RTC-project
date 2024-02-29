@@ -1,11 +1,21 @@
 body, html {
-  margin: 0;
+  /* margin: 0;
   padding: 0;
   width: 100%;
   height: 100%;
   overflow-x: hidden;
   overflow-y: hidden;
-  background-image: url('/public/bg.png');
+  background-image: url('/public/bg.png'); */
+  background-color: #111;
+  background-image:
+    linear-gradient(rgba(255,255,255,.07) 2px, transparent 2px),
+    linear-gradient(90deg, rgba(255,255,255,.07) 2px, transparent 2px),
+    linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+  background-size: 100px 100px, 100px 100px, 20px 20px, 20px 20px;
+  background-position: -2px -2px, -2px -2px, -1px -1px, -1px -1px;
+  overflow-x: hidden;
+  overflow-y: hidden;
 }
 .App{
   width: 100%;
@@ -15,13 +25,46 @@ body, html {
   justify-content: center;
   align-items: center;
 }
+.roomList {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  /* background-color: rgba(32, 33, 36, 0.9); */
 
+  width: 50%;
+  height: auto;
+  padding: 20px;
+  border-radius: 10px;
+  text-align: center;
+  color: white;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+.roomList button {
+  background: transparent;
+  border: 2px solid white;
+  border-radius: 10px;
+  color: white;
+}
+@media screen and (min-width: 1023px) {
+  .roomList {
+    width: 33%;
+  }
+}
+@media screen and (max-width: 430px) {
+  .roomList {
+    width: 70%;
+  }
+}
 .control-bar {
-  width: 70%;
+  width: 80%;
   height: 40px;
   margin: 20px;
-  background-color: rgba(0, 0, 0, 0.7);
-  border-radius: 25px;
+  background-color: rgba(48, 49, 52, 0.9);
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  /* border: 1px solid #27282b; */
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: flex-end;
@@ -31,14 +74,12 @@ body, html {
   z-index: 1;
 }
 .file-select {
-  width: 25%;
+  width: 20%;
   margin: 0 auto;
   padding-left: 5px;
   padding-right: 5px;
-  border: 1px solid white;
   border-radius: 10px;
   color: white;
-  margin-right: 3px;
 }
 .toggle {
   position: relative;
@@ -81,10 +122,11 @@ body, html {
   width: 25%;
   margin: 0 auto;
 }
+
 .color-selector {
   display: flex;
   align-items: center;
-  margin-right: 20px;
+  margin: 0 auto;
 }
 
 .color-option {
@@ -103,11 +145,67 @@ body, html {
     margin-right: 5px;
   }
 }
+@media screen and (min-width: 800px){
+  .control-bar {
+    width: 50%;
+  }
+}
+@media screen and (max-width: 430px) {
+  .roomList {
+    width: 70%;
+  }
+  .control-bar {
+    height: 80px;
+    width: 70%;
+    position: absolute;
+  }
+  .file-select {
+    position: absolute;
+    top:15px;
+    left: 0;
+    right: 50%;
+    bottom: 50%;
+  }
+  .range-select {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    right: 0;
+    bottom: 50%;
+    width: 40%;
+  }
+  .color-selector {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+  }
+  .toggle {
+    position: absolute;
+    right: 10px;
+    bottom: 10px;
+  }
+}
+
 .color-underline {
-  border: 2px solid white;
+  position: relative;
+  border: 2px solid #CCCCCC;
+}
+.color-underline::before {
+  content: "";
+  position: absolute;
+  top: 49%;
+  left: 50%;
+  width: 10px; 
+  height: 10px; 
+  border-radius: 50%;
+  background-color: #CCCCCC; 
+  transform: translate(-50%, -50%);
 }
 .red {
   background-color: red;
+}
+.green {
+  background-color: rgb(54, 197, 41);
 }
 
 .yellow {

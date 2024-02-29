@@ -2,19 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import './App.css';
 import Room from './room.js';
-import io from "socket.io-client";
 
 const App = () => {
   const [roomName, setRoomName] = useState('');
-  const [inputValue, setInputValue] = useState('');
   const navigate = useNavigate(); // useNavigate 훅을 사용하여 페이지 이동 처리
-  // const socket = io("http://localhost:8080");
   const [roomList, setRoomList] = useState();
 
   useEffect(() => {
     setTimeout(() => {
       fetchData();
-    }, 1000); // 0.1초를 밀리초로 변환하여 전달
+    }, 1000); 
   }, []);
 
   useEffect(()=>{
@@ -50,27 +47,35 @@ const App = () => {
   };
 
   return (
-    <Routes>
-      <Route path='/' element={
-        <div>
-          <h1>WebSocket Chat</h1>
-          <input
-            type="text"
-            value={roomName}
-            onChange={(e) => setRoomName(e.target.value)}
-          />
-          <button onClick={handleButtonClick}>Send</button>
-          <h2>Room List:</h2>
-          {roomList && Object.keys(roomList).map((key, index) => (
-            <div key={index}>
-              방제: {key}, 참가자: {roomList[key]}
-              <button onClick={() => handleJoinRoom(key)}>참가</button>
+      <Routes>
+        <Route path='/' element={
+          <div className='roomList'>
+            <h1>WebSocket Chat</h1>
+            <div style={{display:'flex', justifyContent: 'center' }}>
+            <input
+              style={{outline:'none',padding:'5px',borderRadius:'10px'}}
+              type="text"
+              value={roomName}
+              onChange={(e) => setRoomName(e.target.value)}
+              placeholder="방제목 설정"
+            />
+            <button style={{padding:'4px', marginLeft:'5px'}} onClick={handleButtonClick}>Send</button>
             </div>
-          ))}
-        </div>
-      }/>
-      <Route path='/room' element={<Room/>}/>
-    </Routes>
+            <h2>-Room List-</h2>
+            {roomList ? (
+              Object.keys(roomList).map((key, index) => (
+                <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }} key={index}>
+                  방제: {key}, 참가자: {roomList[key]} 명
+                  <button style={{ marginLeft: '15px' }} onClick={() => handleJoinRoom(key)}>Join</button>
+                </div>
+              ))
+            ) : (
+              <h4>존재하는 방이 없습니다.</h4>
+            )}
+          </div>
+        }/>
+        <Route path='/room' element={<Room/>}/>
+      </Routes>
   );
 };
 

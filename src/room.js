@@ -369,6 +369,10 @@ const Room = () => {
           onClick={() => handleColorClick('yellow')}
         ></div>
         <div
+          className={`color-option green ${selectedColor === 'rgb(54, 197, 41)' ? 'color-underline' : ''}`}
+          onClick={() => handleColorClick('rgb(54, 197, 41)')}
+        ></div>
+        <div
           className={`color-option blue ${selectedColor === 'blue' ? 'color-underline' : ''}`}
           onClick={() => handleColorClick('blue')}
         ></div>
