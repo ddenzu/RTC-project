@@ -2,6 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
 import './App.css';
 import Room from './room.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 
 const App = () => {
   const [roomName, setRoomName] = useState('');
@@ -11,10 +13,10 @@ const App = () => {
   useEffect(() => {
     setTimeout(() => {
       fetchData();
-    }, 1000); 
+    }, 500);
   }, []);
 
-  useEffect(()=>{
+  useEffect(() => {
     console.log(roomList)
   }, [roomList])
 
@@ -30,6 +32,7 @@ const App = () => {
       console.error('Error fetching roomList:', error);
     }
   };
+
   const handleButtonClick = async () => {
     try {
       if (!roomName) {
@@ -47,19 +50,20 @@ const App = () => {
   };
 
   return (
-      <Routes>
-        <Route path='/' element={
+    <Routes>
+      <Route path='/' element={
+        <>
           <div className='roomList'>
             <h1>WebSocket Chat</h1>
-            <div style={{display:'flex', justifyContent: 'center' }}>
-            <input
-              style={{outline:'none',padding:'5px',borderRadius:'10px'}}
-              type="text"
-              value={roomName}
-              onChange={(e) => setRoomName(e.target.value)}
-              placeholder="방제목 설정"
-            />
-            <button style={{padding:'4px', marginLeft:'5px'}} onClick={handleButtonClick}>Send</button>
+            <div style={{ display: 'flex', justifyContent: 'center' }}>
+              <input
+                style={{ outline: 'none', padding: '5px', borderRadius: '10px' }}
+                type="text"
+                value={roomName}
+                onChange={(e) => setRoomName(e.target.value)}
+                placeholder="방제목 설정"
+              />
+              <button style={{ padding: '4px', marginLeft: '5px' }} onClick={handleButtonClick}>Send</button>
             </div>
             <h2>-Room List-</h2>
             {roomList ? (
@@ -70,12 +74,18 @@ const App = () => {
                 </div>
               ))
             ) : (
-              <h4>존재하는 방이 없습니다.</h4>
+              <h4>
+                <FontAwesomeIcon icon={faSpinner} spin /> Loading...
+              </h4>
             )}
           </div>
-        }/>
-        <Route path='/room' element={<Room/>}/>
-      </Routes>
+          <footer className='foot'>
+            ⓒ 2024.<br />✔ Contact<br />eogks999@naver.com
+          </footer>
+        </>
+      } />
+      <Route path='/room' element={<Room />} />
+    </Routes>
   );
 };
 
