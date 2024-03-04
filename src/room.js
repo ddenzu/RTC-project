@@ -68,7 +68,7 @@ const Room = () => {
     if (!newSocket) return;
     const handleWebSocketMessage = (data) => {
       const receivedData = data;
-      if (receivedData.type === 'image_move') {
+      if (receivedData.type === 'image') {
         const imageUrl = receivedData.image;
         const img = new Image();
         img.onload = () => {
@@ -106,10 +106,19 @@ const Room = () => {
     };
   }, [newSocket]);
 
+  const sendImageData = () => {
+    const data = {
+      type: 'image',
+      image: image,
+    };
+    sendDataToWebSocket(data);
+  };
+
   const sendImageMoveData = () => {
     const data = {
       type: 'image_move',
       image: image,
+      position: {x:position.x, y:position.y},
     };
     sendDataToWebSocket(data);
   };
@@ -150,7 +159,7 @@ const Room = () => {
   };
   useEffect(() => {
     if (image !== null) {
-      sendImageMoveData();
+      sendImageData();
     }
   }, [image])
 
@@ -258,6 +267,7 @@ const Room = () => {
   };
 
   const handleMouseUp = () => {
+    sendImageMoveData()
     setIsDragging(false);
   };
 
@@ -368,6 +378,21 @@ const Room = () => {
         if (data.type == 'erase') {
           undoLastPath()
         }
+        else if (data.type == 'image_move'){
+          const imageUrl = data.image;
+          const img = new Image();
+          img.onload = () => {
+            const ctx = canvasRef.current.getContext('2d');
+            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+            ctx.drawImage(img, data.position.x, data.position.y, img.width / 3, img.height / 3);
+            setPosition({x:data.position.x, y:data.position.y})
+            drawingPaths.forEach((path) => {
+              drawPath(ctx, path);
+            });
+            setImage(imageUrl)
+          };
+          img.src = imageUrl;
+        }
       });
     }
     window.addEventListener('resize', handleResizeEnd);
@@ -378,7 +403,11 @@ const Room = () => {
 
   return (
     <div className="App" style={{ position: 'relative' }}>
-      <ToastContainer />
+      <ToastContainer 
+        toastStyle={{
+          backgroundColor: 'rgba(51, 51, 51, 0.7)',
+          color: '#fff',
+        }} />
       <div className='control-bar'>
         <input type="file" className='file-select' onChange={handleImageChange} />
         <input type="range" className='range-select' min="1" max="10" step="1" value={selectedWidth}
