@@ -4,34 +4,23 @@ import './App.css';
 import Room from './room.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
+import { useQuery } from 'react-query';
 
 const App = () => {
   const [roomName, setRoomName] = useState('');
   const navigate = useNavigate(); // useNavigate 훅을 사용하여 페이지 이동 처리
-  const [roomList, setRoomList] = useState();
-
-  useEffect(() => {
-    setTimeout(() => {
-      fetchData();
-    }, 500);
-  }, []);
+  
+  const { data: roomList, isLoading, isError } = useQuery('작명', async () => {
+    const response = await fetch('http://localhost:8080/data');
+    if (!response.ok) {
+      throw new Error('Failed to fetch roomList');
+    }
+    return response.json();
+  })
 
   useEffect(() => {
     console.log(roomList)
   }, [roomList])
-
-  const fetchData = async () => {
-    try {
-      const response = await fetch('http://localhost:8080/data');
-      if (!response.ok) {
-        throw new Error('Failed to fetch roomList');
-      }
-      const roomListData = await response.json();
-      setRoomList(roomListData);
-    } catch (error) {
-      console.error('Error fetching roomList:', error);
-    }
-  };
 
   const handleButtonClick = async () => {
     try {
@@ -44,6 +33,7 @@ const App = () => {
       console.error(error);
     }
   };
+
   const handleJoinRoom = (roomName) => {
     setRoomName(roomName);
     navigate('/room', { state: { roomName } });
@@ -66,17 +56,17 @@ const App = () => {
               <button style={{ padding: '4px', marginLeft: '5px' }} onClick={handleButtonClick}>Send</button>
             </div>
             <h2>-Room List-</h2>
-            {roomList ? (
-              Object.keys(roomList).map((key, index) => (
+            {isLoading ? (
+              <h4>
+                <FontAwesomeIcon icon={faSpinner} spin /> Loading...
+              </h4>
+            ) : (
+              roomList && Object.keys(roomList).map((key, index) => (
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }} key={index}>
                   방제: {key}, 참가자: {roomList[key]} 명
                   <button style={{ marginLeft: '15px' }} onClick={() => handleJoinRoom(key)}>Join</button>
                 </div>
               ))
-            ) : (
-              <h4>
-                <FontAwesomeIcon icon={faSpinner} spin /> Loading...
-              </h4>
             )}
           </div>
           <footer className='foot'>

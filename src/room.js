@@ -23,6 +23,8 @@ const Room = () => {
   const [isWebSocketOpen, setIsWebSocketOpen] = useState(false);
   const [drawingData, setdrawingData] = useState({});
   const [newSocket, setNewSocket] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [inputMessage, setInputMessage] = useState('');
 
   useEffect(() => {
     const socket = io(`http://localhost:8080/room`, {
@@ -96,6 +98,8 @@ const Room = () => {
           }
         });
         setDrawingPaths(prevPaths => [...prevPaths, receivedData.path]);
+      } else if (receivedData.type == 'chatMessage') {
+        setMessages(messages => [...messages, receivedData.messages]);
       }
     };
     newSocket.on('message', (data) => {
@@ -105,6 +109,16 @@ const Room = () => {
       newSocket.off('message', handleWebSocketMessage);
     };
   }, [newSocket]);
+
+  const sendMessageData = () => {
+    const data = {
+      type: 'chatMessage',
+      messages: inputMessage,
+    }
+    setMessages([...messages, inputMessage]);
+    setInputMessage('');
+    sendDataToWebSocket(data);
+  }
 
   const sendImageData = () => {
     const data = {
@@ -401,8 +415,30 @@ const Room = () => {
     };
   }, [image, drawingPaths, imagePosition]);
 
+  const handleKeyPress = (e) => {
+    if (e.key == 'Enter'){
+      sendMessageData();
+    }
+  }
+
   return (
     <div className="App" style={{ position: 'relative' }}>
+      <div className='chat-box'>
+        <div className='messages-area'>
+          <div className='chat-messages'>
+            {messages.map((message, index) => (
+              <div style={{margin: '2px 2px 2xp 5px'}} key={index}>{message}</div>
+            ))}
+          </div>
+        </div>
+        <input
+          type="text"
+          value={inputMessage}
+          onChange={(e) => setInputMessage(e.target.value)}
+          onKeyPress={handleKeyPress}
+        />
+        <button onClick={sendMessageData}>Send</button>
+      </div>
       <ToastContainer 
         toastStyle={{
           backgroundColor: 'rgba(51, 51, 51, 0.7)',
