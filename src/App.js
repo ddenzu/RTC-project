@@ -11,7 +11,7 @@ const App = () => {
   const navigate = useNavigate(); // useNavigate 훅을 사용하여 페이지 이동 처리
   
   const { data: roomList, isLoading, isError } = useQuery('작명', async () => {
-    const response = await fetch('http://localhost:8080/data');
+    const response = await fetch('/data');
     if (!response.ok) {
       throw new Error('Failed to fetch roomList');
     }
