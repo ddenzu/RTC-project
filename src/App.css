@@ -30,21 +30,22 @@ body, html {
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.6);
+  background-color: rgba(0, 0, 0, 0.7);
   /* background-color: rgba(32, 33, 36, 0.9); */
   width: 50%;
   height: auto;
   padding: 20px;
   border-radius: 10px;
   text-align: center;
-  color: white;
-  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  color: #EFEFEF;
+  /* border: 1px #494a51 solid; */
+  box-shadow: 3px 3px 4px 0 rgba(0, 0, 0, 0.3);
 }
 .roomList button {
   background: transparent;
-  border: 2px solid white;
+  border: 2px solid #EFEFEF;
   border-radius: 10px;
-  color: white;
+  color: #EFEFEF;
 }
 .foot {
   background-color: rgba(0, 0, 0, 0.7);
@@ -52,7 +53,7 @@ body, html {
   bottom : 0;
   width: 100%;
   height: auto;
-  color: white;
+  color: #EFEFEF;
   text-align: center;
 }
 .chat-box {
@@ -61,10 +62,11 @@ body, html {
   position: absolute;
   top: 13px;
   right: 12px;
-  color: white;
+  color: #EFEFEF;
   width: fit-content;
   background-color: rgba(0, 0, 0, 0.6);
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  border: 1px #494a51 solid;
   padding: 10px;
   border-radius: 10px;
   width: fit-content;
@@ -75,10 +77,13 @@ body, html {
   display: flex;
   flex-direction: column-reverse; 
 }
+.chat-messages > div {
+  margin: 2px 2px 1px 2px;
+}
 .chat-box button {
   background-color: transparent;
-  color: white;
-  border: 1px solid white;
+  color: #EFEFEF;
+  border: 1px solid #EFEFEF;
   margin-left: 3px;
   cursor: pointer;
   border-radius: 5px;
@@ -103,7 +108,7 @@ body, html {
   width: 80%;
   height: 40px;
   margin: 20px;
-  background-color: rgba(45, 46, 67, 0.7);
+  background-color:  rgba(127, 127, 126, 0.55);
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
   border-radius: 20px;
   display: flex;

@@ -55,7 +55,7 @@ const App = () => {
               />
               <button style={{ padding: '4px', marginLeft: '5px' }} onClick={handleButtonClick}>Send</button>
             </div>
-            <h2>-Room List-</h2>
+            <h2>- Room List -</h2>
             {isLoading ? (
               <h4>
                 <FontAwesomeIcon icon={faSpinner} spin /> Loading...
