@@ -194,6 +194,7 @@ body, html {
 @media screen and (min-width: 800px){
   .control-bar {
     width: 50%;
+    position: fixed;
   }
 }
 @media screen and (max-width: 430px) {
@@ -204,6 +205,7 @@ body, html {
     height: 80px;
     width: 70%;
     position: absolute;
+    position: fixed;
   }
   .file-select {
     position: absolute;
