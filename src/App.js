@@ -8,11 +8,12 @@ import { useQuery } from 'react-query';
 
 const App = () => {
   const [roomName, setRoomName] = useState('');
+  const [roomPassword, setRoomPassword] = useState('');
   const navigate = useNavigate(); // useNavigate 훅을 사용하여 페이지 이동 처리
   
   const { data: roomList, isLoading, isError } = useQuery('작명', async () => {
     const response = await fetch('/data');
-    if (!response.ok) {
+    if (!response.ok) { 
       throw new Error('Failed to fetch roomList');
     }
     return response.json();
@@ -28,7 +29,11 @@ const App = () => {
         alert('방 제목을 지정해 주세요.');
         return;
       }
-      return navigate('/room', { state: { roomName } });
+      if (!roomPassword) {
+        alert('비밀번호를 지정해 주세요.');
+        return;
+      }
+      return navigate('/room', { state: { roomName, roomPassword } });
     } catch (error) {
       console.error(error);
     }
@@ -45,15 +50,26 @@ const App = () => {
         <>
           <div className='roomList'>
             <h1>WebSocket Chat</h1>
-            <div style={{ display: 'flex', justifyContent: 'center' }}>
-              <input
-                style={{ outline: 'none', padding: '5px', borderRadius: '10px' }}
-                type="text"
-                value={roomName}
-                onChange={(e) => setRoomName(e.target.value)}
-                placeholder="방제목 설정"
-              />
-              <button style={{ padding: '4px', marginLeft: '5px' }} onClick={handleButtonClick}>Send</button>
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <div style={{ display: 'flex', alignItems: 'center' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', marginRight: '5px' }}>
+                  <input
+                    style={{ outline: 'none', padding: '5px', borderRadius: '10px', marginBottom: '5px' }}
+                    type="text"
+                    value={roomName}
+                    onChange={(e) => setRoomName(e.target.value)}
+                    placeholder="방제목 설정"
+                  />
+                  <input
+                    style={{ outline: 'none', padding: '5px', borderRadius: '10px' }}
+                    type="text"
+                    value={roomPassword}
+                    onChange={(e) => setRoomPassword(e.target.value)}
+                    placeholder="비밀번호 설정"
+                  />
+                </div>
+                <button style={{ padding: '5px', height: '65px' }} onClick={handleButtonClick}>Send</button>
+              </div>
             </div>
             <h2>- Room List -</h2>
             {isLoading ? (
