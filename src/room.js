@@ -27,9 +27,10 @@ const Room = () => {
   const [inputMessage, setInputMessage] = useState('');
 
   useEffect(() => {
-    const socket = io(`/room`, {
+    const socket = io(`192.168.219.106:8080/room`, {
       query: {
         room: state.roomName,
+        password: state.roomPassword
       }
     });
 

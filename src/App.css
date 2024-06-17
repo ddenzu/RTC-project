@@ -280,3 +280,45 @@ input:checked + .slider:before {
   transform: translateX(30px); 
 }
 
+.modal-overlay {
+  background-color: rgba(0, 0, 0, 0.75);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-content {
+  background: #2f2f2f;
+  color: white;
+  padding: 20px;
+  border-radius: 5px;
+  border: 1px solid white;
+  width: 80%;
+  max-width: 450px; 
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  position: relative;
+}
+
+.modal-button {
+  display: flex;
+  justify-content: space-between;
+  padding: 5px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.modal-button-submit {
+  background-color: #4CAF50;
+  color: white;
+}
+
+.modal-button-cancel {
+  background-color: #f44336;
+  color: white;
+}
