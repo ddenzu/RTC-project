@@ -17,7 +17,7 @@ const App = () => {
   const { data: roomList, isLoading, isError } = useQuery('작명', async () => {
     const response = await fetch('http://192.168.219.106:8080/data');
     if (!response.ok) { 
-      throw new Error('Failed to fetch roomList');
+      throw new Error('방목록 가져오기 실패');
     }
     return response.json();
   })
@@ -88,14 +88,15 @@ const App = () => {
               <div style={{ display: 'flex', alignItems: 'center' }}>
                 <div style={{ display: 'flex', flexDirection: 'column', marginRight: '5px' }}>
                   <input
-                    style={{ outline: 'none', padding: '5px', borderRadius: '10px', marginBottom: '5px' }}
+                    className='roomTitleInput'
                     type="text"
                     value={roomName}
                     onChange={(e) => setRoomName(e.target.value)}
                     placeholder="방제목 설정"
                   />
                   <input
-                    style={{ outline: 'none', padding: '5px', borderRadius: '10px' }}
+                    className='roomTitleInput'
+                    style={{ marginBottom: '0px' }}
                     type="password"
                     value={roomPassword}
                     onChange={(e) => setRoomPassword(e.target.value)}
