@@ -6,6 +6,7 @@ import io from "socket.io-client";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { useWebSocket } from './utils/websocket';
+import { drawPath } from './utils/canvas';
 
 const Room = () => {
   const location = useLocation();
@@ -23,54 +24,15 @@ const Room = () => {
   const [selectedWidth, setSelectedWidth] = useState(2);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
-  // const { newSocket, sendDataToWebSocket, handleKeyDown } = useWebSocket(state.roomName, state.roomPassword, undoLastPath);
-
-  // useEffect(() => {
-  //   if (!newSocket) return;
-  //   const handleWebSocketMessage = (data) => {
-  //     const ctx = canvasRef.current.getContext('2d');
+  // useCanvasEffect(canvasRef, drawingPaths);
   
-  //     if (data.type === 'image') {
-  //       const img = new Image();
-  //       img.onload = () => {
-  //         ctx.drawImage(img, 0, 0, img.width / 3, img.height / 3);
-  //         setImage(data.image);
-  //       };
-  //       img.src = data.image;
-  //     } else if (data.type === 'draw') {
-  //       setSelectedColor(data.color);
-  //       setSelectedWidth(data.width);
-  //       setDrawingPaths((prevPaths) => [...prevPaths, data.path]);
-  
-  //       ctx.strokeStyle = data.color;
-  //       ctx.lineWidth = data.width;
-  //       ctx.beginPath();
-  //       data.path.path.forEach((point, index) => {
-  //         if (index === 0) {
-  //           ctx.moveTo(point.x, point.y);
-  //         } else {
-  //           ctx.lineTo(point.x, point.y);
-  //           ctx.stroke();
-  //         }
-  //       });
-  //     } else if (data.type === 'chatMessage') {
-  //       setMessages((messages) => [...messages, data.messages]);
-  //     }
-  //   };
-
-  //   newSocket.on('message', (data) => {
-  //     handleWebSocketMessage(data)
-  //   });
-  //   return () => {
-  //     newSocket.off('message', handleWebSocketMessage);
-  //   };
-  // }, [newSocket]);
-
   const undoLastPath = () => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     const lastPath = drawingPaths.pop();
+    const copyPaths = [...drawingPaths];
     setDrawingPaths([...drawingPaths]);
+    // console.log(copyPaths)
     if (lastPath) {
       const deletedPathColor = lastPath.color;
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -78,8 +40,9 @@ const Room = () => {
       document.querySelectorAll('.color-option').forEach((option) => {
         option.classList.remove('color-underline');
       });
+      console.log(drawingPaths.length)
       // 저장된 색상으로 이전에 그려진 선들을 다시 그림
-      drawingPaths.forEach((path) => {
+      copyPaths.forEach((path) => {
         ctx.strokeStyle = path.color;
         ctx.lineWidth = path.width;
         ctx.beginPath();
@@ -88,9 +51,9 @@ const Room = () => {
             ctx.moveTo(point.x, point.y);
           } else {
             ctx.lineTo(point.x, point.y);
-            ctx.stroke();
           }
         });
+        ctx.stroke();
       });
 
       // 삭제된 선의 색상을 다시 설정
@@ -99,10 +62,11 @@ const Room = () => {
     }
   };
 
-  const { newSocket, sendDataToWebSocket, handleKeyDown } = useWebSocket(state.roomName, state.roomPassword, undoLastPath);
+  const { newSocket, sendDataToWebSocket } = useWebSocket(state.roomName, state.roomPassword);
 
   useEffect(() => {
     if (!newSocket) return;
+  
     const handleWebSocketMessage = (data) => {
       const ctx = canvasRef.current.getContext('2d');
   
@@ -131,16 +95,65 @@ const Room = () => {
         });
       } else if (data.type === 'chatMessage') {
         setMessages((messages) => [...messages, data.messages]);
+      } else if (data.type === 'erase') {
+        console.log(drawingPaths);
+        undoLastPath();
+      } else if (data.type === 'image_move') {
+        console.log(drawingPaths);
+        const imageUrl = data.image;
+        const img = new Image();
+        img.onload = () => {
+          const ctx = canvasRef.current.getContext('2d');
+          ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+          ctx.drawImage(img, data.position.x, data.position.y, img.width / 3, img.height / 3);
+          setPosition({ x: data.position.x, y: data.position.y });
+          drawingPaths.forEach((path) => {
+            drawPath(ctx, path);
+          });
+          setImage(imageUrl);
+        };
+        img.src = imageUrl;
       }
     };
-
-    newSocket.on('message', (data) => {
-      handleWebSocketMessage(data)
-    });
+  
+    newSocket.on('message', handleWebSocketMessage);
+  
+    const handleResizeEnd = debounce(() => {
+      redrawCanvas();
+      setTimeout(() => {
+        setImagePosition((prevPosition) => ({
+          x: prevPosition.x + 1,
+          y: prevPosition.y,
+        }));
+      }, 100);
+    }, 100);
+  
+    const redrawCanvas = () => {
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      setCanvasDimensions();
+  
+      if (image) {
+        const img = new Image();
+        img.onload = () => {
+          drawImageOnCanvas(ctx, img);
+        };
+        img.src = image;
+      }
+  
+      drawingPaths.forEach((path) => {
+        drawPath(ctx, path);
+      });
+    };
+  
+    window.addEventListener('resize', handleResizeEnd);
+  
     return () => {
       newSocket.off('message', handleWebSocketMessage);
+      window.removeEventListener('resize', handleResizeEnd);
     };
-  }, [newSocket]);
+  }, [newSocket, image, drawingPaths, imagePosition]);
 
   const sendMessageData = () => {
     const data = {
@@ -251,32 +264,9 @@ const Room = () => {
     setCanvasDimensions();
   }, [image]);
 
-  useEffect(() => {
-    window.addEventListener('resize', setCanvasDimensions);
-
-    return () => {
-      window.removeEventListener('resize', setCanvasDimensions);
-    };
-  }, []);
-
-  const drawPath = (ctx, path) => {
-    ctx.strokeStyle = path.color;
-    ctx.lineWidth = path.width;
-    ctx.beginPath();
-    path.path.forEach((point, index) => {
-      if (index === 0) {
-        ctx.moveTo(point.x, point.y);
-      } else {
-        ctx.lineTo(point.x, point.y);
-        ctx.stroke();
-      }
-    });
-  };
-
   const drawImageOnCanvas = (ctx, img) => {
     ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
     ctx.drawImage(img, position.x, position.y, img.width / 3, img.height / 3);
-
     drawingPaths.forEach((path) => {
       drawPath(ctx, path);
     });
@@ -302,6 +292,14 @@ const Room = () => {
     setDrawingPaths([...drawingPaths, { path: [], color: ctx.strokeStyle, width: ctx.lineWidth }]);
   };
 
+  const handleKeyDown = (e) => {
+    if (e.ctrlKey && e.key === 'z') {
+      undoLastPath();
+      if (newSocket) {
+        newSocket.emit('message', { type: 'erase' })
+      }
+    }
+  };
 
   const handleMouseMove = (e) => {
     if (!isDragging || !isToggleActive) return;
@@ -343,48 +341,6 @@ const Room = () => {
     setDrawingPaths(updatedPaths);
   };
 
-  // const handleKeyDown = (e) => {
-  //   if (e.ctrlKey && e.key === 'z') {
-  //     undoLastPath();
-  //     if (newSocket) {
-  //       newSocket.emit('message', { type: 'erase' })
-  //     }
-  //   }
-  // };
-
-  // const undoLastPath = () => {
-  //   const canvas = canvasRef.current;
-  //   const ctx = canvas.getContext('2d');
-  //   const lastPath = drawingPaths.pop();
-  //   setDrawingPaths([...drawingPaths]);
-  //   if (lastPath) {
-  //     const deletedPathColor = lastPath.color;
-  //     ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //     setCanvasDimensions();
-  //     document.querySelectorAll('.color-option').forEach((option) => {
-  //       option.classList.remove('color-underline');
-  //     });
-  //     // 저장된 색상으로 이전에 그려진 선들을 다시 그림
-  //     drawingPaths.forEach((path) => {
-  //       ctx.strokeStyle = path.color;
-  //       ctx.lineWidth = path.width;
-  //       ctx.beginPath();
-  //       path.path.forEach((point, index) => {
-  //         if (index === 0) {
-  //           ctx.moveTo(point.x, point.y);
-  //         } else {
-  //           ctx.lineTo(point.x, point.y);
-  //           ctx.stroke();
-  //         }
-  //       });
-  //     });
-
-  //     // 삭제된 선의 색상을 다시 설정
-  //     setSelectedColor(deletedPathColor)
-  //     ctx.strokeStyle = deletedPathColor;
-  //   }
-  // };
-
   const handleMouseUp2 = () => {
     setIsDrawing(false);
     sendDrawData();
@@ -403,83 +359,74 @@ const Room = () => {
     };
   }, [drawingPaths]);
 
-  useEffect(() => {
-    const handleResizeEnd = debounce(() => {
-      redrawCanvas();
-      setTimeout(() => {
-        setImagePosition(prevPosition => ({
-          x: prevPosition.x + 1,
-          y: prevPosition.y
-        }));
-      }, 100);
-    }, 100);
+  // useEffect(() => {
+  //   const handleResizeEnd = debounce(() => {
+  //     redrawCanvas();
+  //     setTimeout(() => {
+  //       setImagePosition(prevPosition => ({
+  //         x: prevPosition.x + 1,
+  //         y: prevPosition.y
+  //       }));
+  //     }, 100);
+  //   }, 100);
 
-    const redrawCanvas = () => {
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext('2d');
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      setCanvasDimensions();
+  //   const redrawCanvas = () => {
+  //     const canvas = canvasRef.current;
+  //     const ctx = canvas.getContext('2d');
+  //     ctx.clearRect(0, 0, canvas.width, canvas.height);
+  //     setCanvasDimensions();
 
-      if (image) {
-        const img = new Image();
-        img.onload = () => {
-          drawImageOnCanvas(ctx, img);
-        };
-        img.src = image;
-      }
+  //     if (image) {
+  //       const img = new Image();
+  //       img.onload = () => {
+  //         drawImageOnCanvas(ctx, img);
+  //       };
+  //       img.src = image;
+  //     }
 
-      drawingPaths.forEach((path) => {
-        drawPath(ctx, path);
-      });
-    };
-    if (newSocket) {
-      newSocket.on('message', (data) => {
-        if (data.type == 'erase') {
-          undoLastPath()
-        }
-        else if (data.type == 'image_move'){
-          const imageUrl = data.image;
-          const img = new Image();
-          img.onload = () => {
-            // 오프스크린 캔버스 생성
-            const offscreenCanvas = document.createElement('canvas');
-            offscreenCanvas.width = canvasRef.current.width;
-            offscreenCanvas.height = canvasRef.current.height;
-            const offscreenCtx = offscreenCanvas.getContext('2d');
-        
-            // 오프스크린 캔버스에 이미지 그리기
-            offscreenCtx.clearRect(0, 0, offscreenCanvas.width, offscreenCanvas.height);
-            offscreenCtx.drawImage(img, data.position.x, data.position.y, img.width / 3, img.height / 3);
-        
-            // drawingPaths 배열을 순회하면서 오프스크린 캔버스에 경로 그리기
-            drawingPaths.forEach((path, index) => {
-              drawPath(offscreenCtx, path);
-            });
-        
-            // 마지막에 메인 캔버스에 그리기
-            const ctx = canvasRef.current.getContext('2d');
-            ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-            ctx.drawImage(offscreenCanvas, 0, 0);
-        
-            // 상태 업데이트
-            setPosition({ x: data.position.x, y: data.position.y });
-            setImage(imageUrl);
-          };
-          img.src = imageUrl;
-        }
-      });
-    }
-    window.addEventListener('resize', handleResizeEnd);
-    return () => {
-      window.removeEventListener('resize', handleResizeEnd);
-    };
-  }, [image, drawingPaths, imagePosition]);
+  //     drawingPaths.forEach((path) => {
+  //       drawPath(ctx, path);
+  //     });
+  //   };
+  //   if (newSocket) {
+  //     newSocket.on('message', (data) => {
+  //       console.log(data)
+  //       if (data.type == 'erase') {
+  //         console.log(drawingPaths)
+  //         undoLastPath()
+  //       }
+  //       else if (data.type == 'image_move'){
+  //         console.log(drawingPaths)
+  //         const imageUrl = data.image;
+  //         const img = new Image();
+  //         img.onload = () => {
+  //           const ctx = canvasRef.current.getContext('2d');
+  //           ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+  //           ctx.drawImage(img, data.position.x, data.position.y, img.width / 3, img.height / 3);
+  //           setPosition({x:data.position.x, y:data.position.y})
+  //           drawingPaths.forEach((path) => {
+  //             // console.log('aaaaa')
+  //             drawPath(ctx, path);
+  //           });
+  //           setImage(imageUrl)
+  //         };
+  //         console.log(drawingPaths)
+  //         img.src = imageUrl;
+  //       }
+  //     });
+  //   }
+  //   window.addEventListener('resize', handleResizeEnd);
+  //   return () => {
+  //     window.removeEventListener('resize', handleResizeEnd);
+  //   };
+  // }, [image, drawingPaths, imagePosition]);
 
   const handleKeyPress = (e) => {
     if (e.key == 'Enter'){
       sendMessageData();
     }
   }
+  
   
   const colors = [
     { name: 'red', value: 'red' },
