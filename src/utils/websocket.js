@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 import { useCanvasEffect, drawPath } from './canvas';
-
-export const useWebSocket = (roomName, roomPassword, undoLastPath, handleWebSocketMessage ) => {
+// 웹소켓 관련 기능 모음
+export const useWebSocket = (roomName, roomPassword, handleWebSocketMessage ) => {
   const [newSocket, setNewSocket] = useState(null);
 
   useEffect(() => {
@@ -46,15 +46,6 @@ export const useWebSocket = (roomName, roomPassword, undoLastPath, handleWebSock
       console.log('WebSocket 연결이 아직 완료되지 않았습니다.');
     }
   };
-
-  // const handleKeyDown = (e) => {
-  //   if (e.ctrlKey && e.key === 'z') {
-  //     undoLastPath();
-  //     if (newSocket) {
-  //       newSocket.emit('message', { type: 'erase' })
-  //     }
-  //   }
-  // };
 
   const eraseLine = () => {
     if (newSocket) {
