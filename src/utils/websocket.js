@@ -3,7 +3,7 @@ import io from 'socket.io-client';
 import { toast } from 'react-toastify';
 import { useCanvasEffect, drawPath } from './canvas';
 // 웹소켓 관련 기능 모음
-export const useWebSocket = (roomName, roomPassword, handleWebSocketMessage ) => {
+export const useWebSocket = (roomName, roomPassword, ) => {
   const [newSocket, setNewSocket] = useState(null);
 
   useEffect(() => {
