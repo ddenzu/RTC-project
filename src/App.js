@@ -6,60 +6,33 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useQuery } from 'react-query';
 import Modal from 'react-modal';
+import { fetchRoomList, checkRoomPassword } from './utils/dataHandler';
 
 const App = () => {
   const [roomName, setRoomName] = useState('');
   const [roomPassword, setRoomPassword] = useState('');
   const [modalIsOpen, setModalIsOpen] = useState(false);
   const [tempRoomName, setTempRoomName] = useState('');
-  const navigate = useNavigate(); // useNavigate 훅을 사용하여 페이지 이동 처리
-  
-  const { data: roomList, isLoading, isError } = useQuery('작명', async () => {
-    const response = await fetch('http://192.168.219.106:8080/data');
-    if (!response.ok) { 
-      throw new Error('방목록 가져오기 실패');
-    }
-    return response.json();
-  })
+  const navigate = useNavigate(); 
+  const { data: roomList, isLoading } = useQuery('roomList', fetchRoomList);
 
-  useEffect(() => {
-    console.log(roomList)
-  }, [roomList])
-
-  const handleButtonClick = async () => {
-    try {
-      if (!roomName) {
-        alert('방 제목을 지정해 주세요.');
-        return;
-      }
-      if (!roomPassword) {
-        alert('비밀번호를 지정해 주세요.');
-        return;
-      }
-      return navigate('/room', { state: { roomName, roomPassword } });
-    } catch (error) {
-      console.error(error);
+  const newRoomButton = async () => {
+    if (!roomName || !roomPassword) {
+      alert(!roomName ? '방 제목을 지정해 주세요.' : '비밀번호를 지정해 주세요.');
+      return;
     }
+    navigate('/room', { state: { roomName, roomPassword } });
   };
 
-  const handleJoinRoom = (roomName) => {
+  const joinRoom = (roomName) => { // 비밀번호 입력 전
     setTempRoomName(roomName);
     setModalIsOpen(true);
   };
 
-  const handleModalSubmit = async () => {
+  const joinButton = async () => { // 비밀번호 입력 후
     try {
-      const response = await fetch('http://192.168.219.106:8080/checkPassword', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ roomName: tempRoomName, roomPassword }),
-      });
-  
-      const data = await response.json();
-  
-      if (data.success) {
+      const checkPassword = await checkRoomPassword(tempRoomName, roomPassword);
+      if (checkPassword) {
         setModalIsOpen(false);
         navigate('/room', { state: { roomName: tempRoomName, roomPassword } });
       } else {
@@ -72,7 +45,7 @@ const App = () => {
     }
   };
 
-  const handleModalClose = () => {
+  const closeButton = () => {
     setModalIsOpen(false);
     setRoomPassword(''); 
   };
@@ -103,7 +76,7 @@ const App = () => {
                     placeholder="비밀번호 설정"
                   />
                 </div>
-                <button style={{ padding: '5px', height: '65px' }} onClick={handleButtonClick}>NewRoom</button>
+                <button style={{ padding: '5px', height: '65px' }} onClick={newRoomButton}>NewRoom</button>
               </div>
             </div>
             <h2>- Room List -</h2>
@@ -115,7 +88,7 @@ const App = () => {
               roomList && Object.keys(roomList).map((key, index) => (
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }} key={index}>
                   방제: {key}, 참가자: {roomList[key].count} 명
-                  <button style={{ marginLeft: '15px' }} onClick={() => handleJoinRoom(key)}>Join</button>
+                  <button style={{ marginLeft: '15px' }} onClick={() => joinRoom(key)}>Join</button>
                 </div>
               ))
             )}
@@ -129,7 +102,7 @@ const App = () => {
     </Routes>
     <Modal
       isOpen={modalIsOpen}
-      onRequestClose={handleModalClose}
+      onRequestClose={closeButton}
       className="modal-content"
       overlayClassName="modal-overlay"
       contentLabel="비밀번호 입력"
@@ -143,8 +116,8 @@ const App = () => {
         value={roomPassword}
         onChange={(e) => setRoomPassword(e.target.value)}
       />
-      <button className='modal-button-submit modal-button' onClick={handleModalSubmit}>Join</button>
-      <button className='modal-button-cancel modal-button' onClick={handleModalClose}>Cancel</button>
+      <button className='modal-button-submit modal-button' onClick={joinButton}>Join</button>
+      <button className='modal-button-cancel modal-button' onClick={closeButton}>Cancel</button>
     </div>
     </Modal>
   </>

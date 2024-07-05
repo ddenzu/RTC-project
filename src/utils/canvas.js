@@ -180,50 +180,90 @@ export const handleResizeCanvas = (canvasRef, image, position, drawingPaths, set
   }, 100);
 };
 
-export const handleWebSocketData = (canvasRef, setImage, setSelectedColor, setSelectedWidth, 
-  setDrawingPaths, setPosition, drawingPaths, setMessages, setCanvasDimensions) => (data) => {
+export const handleReceivedData = (
+  canvasRef,
+  data,
+  setImage,
+  setMessages,
+  setSelectedColor,
+  setSelectedWidth,
+  setDrawingPaths,
+  undoLastPath,
+  setCanvasDimensions,
+  setPosition,
+  drawingPaths
+) => {
   const ctx = canvasRef.current.getContext('2d');
-  if (data.type === 'image') {
-    const img = new Image();
-    img.onload = () => {
-      ctx.drawImage(img, 0, 0, img.width / 3, img.height / 3);
-      setImage(data.image);
-    };
-    img.src = data.image;
-  } else if (data.type === 'draw') {
-    setSelectedColor(data.color);
-    setSelectedWidth(data.width);
-    setDrawingPaths((prevPaths) => [...prevPaths, data.path]);
 
-    ctx.strokeStyle = data.color;
-    ctx.lineWidth = data.width;
-    ctx.beginPath();
-    data.path.path.forEach((point, index) => {
-      if (index === 0) {
-        ctx.moveTo(point.x, point.y);
-      } else {
-        ctx.lineTo(point.x, point.y);
-        ctx.stroke();
-      }
-    });
-  } else if (data.type === 'chatMessage') {
-    setMessages((messages) => [...messages, data.messages]);
-  } else if (data.type === 'erase') {
-    console.log('s')
-    undoLastPath(canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions);
-  } else if (data.type === 'image_move') {
-    const imageUrl = data.image;
-    const img = new Image();
-    img.onload = () => {
-      ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-      ctx.drawImage(img, data.position.x, data.position.y, img.width / 3, img.height / 3);
-      setPosition({ x: data.position.x, y: data.position.y });
-      drawingPaths.forEach((path) => {
-        drawPath(ctx, path);
-      });
-    };
-    img.src = imageUrl;
+  switch (data.type) {
+    case 'image':
+      handleImageMessage(ctx, data, setImage);
+      break;
+    case 'draw':
+      handleDrawMessage(ctx, data, setSelectedColor, setSelectedWidth, setDrawingPaths);
+      break;
+    case 'chatMessage':
+      handleChatMessage(data, setMessages);
+      break;
+    case 'erase':
+      handleEraseMessage(canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions);
+      break;
+    case 'image_move':
+      handleImageMoveMessage(canvasRef, data, setPosition, drawingPaths);
+      break;
+    default:
+      console.log('Unknown message type:', data.type);
   }
+};
+
+const handleImageMessage = (ctx, data, setImage) => {
+  const img = new Image();
+  img.onload = () => {
+    ctx.drawImage(img, 0, 0, img.width / 3, img.height / 3);
+    setImage(data.image);
+  };
+  img.src = data.image;
+};
+
+const handleDrawMessage = (ctx, data, setSelectedColor, setSelectedWidth, setDrawingPaths) => {
+  setSelectedColor(data.color);
+  setSelectedWidth(data.width);
+  setDrawingPaths((prevPaths) => [...prevPaths, data.path]);
+
+  ctx.strokeStyle = data.color;
+  ctx.lineWidth = data.width;
+  ctx.beginPath();
+  data.path.path.forEach((point, index) => {
+    if (index === 0) {
+      ctx.moveTo(point.x, point.y);
+    } else {
+      ctx.lineTo(point.x, point.y);
+      ctx.stroke();
+    }
+  });
+};
+
+const handleChatMessage = (data, setMessages) => {
+  setMessages((messages) => [...messages, data.messages]);
+};
+
+const handleEraseMessage = (canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions) => {
+  undoLastPath(canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions);
+};
+
+const handleImageMoveMessage = (canvasRef, data, setPosition, drawingPaths) => {
+  const imageUrl = data.image;
+  const img = new Image();
+  img.onload = () => {
+    const ctx = canvasRef.current.getContext('2d');
+    ctx.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
+    ctx.drawImage(img, data.position.x, data.position.y, img.width / 3, img.height / 3);
+    setPosition({ x: data.position.x, y: data.position.y });
+    drawingPaths.forEach((path) => {
+      drawPath(ctx, path);
+    });
+  };
+  img.src = imageUrl;
 };
 
 export const colors = [

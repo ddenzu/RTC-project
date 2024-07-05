@@ -1,4 +1,4 @@
-// 데이터를 웹소켓으로 전송하는 기능 모음
+// 데이터를 서버로 전송하는 기능 모음
 export const sendMessageData = (inputMessage, setMessages, setInputMessage, sendDataToWebSocket) => {
     const data = {
       type: 'chatMessage',
@@ -34,4 +34,23 @@ export const sendDrawData = (drawingPaths, selectedColor, selectedWidth, sendDat
       path: drawingPaths[drawingPaths.length - 1],
     };
     sendDataToWebSocket(data);
+};
+
+export const fetchRoomList = async () => {
+    const response = await fetch('http://192.168.219.106:8080/data');
+    if (!response.ok) {
+      throw new Error('방목록 가져오기 실패');
+    }
+    return response.json();
+};
+  
+export const checkRoomPassword = async (roomName, roomPassword) => {
+    const response = await fetch('http://192.168.219.106:8080/checkPassword', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ roomName, roomPassword }),
+    });
+  
+    const data = await response.json();
+    return data.success;
 };
