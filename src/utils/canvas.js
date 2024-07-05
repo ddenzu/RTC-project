@@ -15,7 +15,13 @@ export const drawPath = (ctx, path) => {  // 파라미터로 들어오는 path �
   });
 };
 
-export const undoLastPath = (canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions ) => {
+export const undoLastPath = (
+  canvasRef, 
+  drawingPaths, 
+  setDrawingPaths, 
+  setSelectedColor, 
+  setCanvasDimensions 
+) => {
   const canvas = canvasRef.current; // drawingPaths 배열의 마지막 line 을 지우고 이미지와 라인 그리는 함수
   const ctx = canvas.getContext('2d');
   const lastPath = drawingPaths.pop();
@@ -68,7 +74,13 @@ export const updateWidth = (canvasRef, width, setSelectedWidth) => {
   ctx.lineWidth = width;
 };
 
-export const handleImageClick = (canvasRef, isToggleActive, setIsDragging, setMousePosition, e) => {
+export const handleImageClick = (
+  canvasRef, 
+  isToggleActive, 
+  setIsDragging, 
+  setMousePosition, 
+  e
+) => {
   if (!isToggleActive) return;
   setIsDragging(true);
   const rect = canvasRef.current.getBoundingClientRect();
@@ -78,8 +90,18 @@ export const handleImageClick = (canvasRef, isToggleActive, setIsDragging, setMo
   });
 };
 
-export const handleImageDrag = (canvasRef,position,isDragging, isToggleActive,drawingPaths,e,image,setPosition,
-  setMousePosition,mousePosition ) => {
+export const handleImageDrag = (
+  canvasRef,
+  position,
+  isDragging, 
+  isToggleActive,
+  drawingPaths,
+  image,
+  setPosition,
+  setMousePosition,
+  mousePosition,
+  e
+) => {
   if (!isDragging || !isToggleActive) return;
 
   const rect = canvasRef.current.getBoundingClientRect();
@@ -104,7 +126,17 @@ export const handleImageDrag = (canvasRef,position,isDragging, isToggleActive,dr
   img.src = image;
 };
 
-export const handlePenClick = (e, canvasRef, selectedColor, setSelectedColor, selectedWidth, setSelectedWidth, setIsDrawing, drawingPaths, setDrawingPaths) => {
+export const handlePenClick = (
+  canvasRef, 
+  selectedColor, 
+  setSelectedColor, 
+  selectedWidth, 
+  setSelectedWidth, 
+  setIsDrawing, 
+  drawingPaths, 
+  setDrawingPaths,
+  e
+) => {
   updateColor(canvasRef, selectedColor, setSelectedColor);
   updateWidth(canvasRef, selectedWidth, setSelectedWidth);
   
@@ -118,7 +150,13 @@ export const handlePenClick = (e, canvasRef, selectedColor, setSelectedColor, se
   setDrawingPaths([...drawingPaths, { path: [], color: ctx.strokeStyle, width: ctx.lineWidth }]);
 };
 
-export const handlePenDrag = (e, canvasRef, isDrawing, drawingPaths, setDrawingPaths) => {
+export const handlePenDrag = (
+  canvasRef, 
+  isDrawing, 
+  drawingPaths, 
+  setDrawingPaths,
+  e
+) => {
   if (!isDrawing) return;
   
   const ctx = canvasRef.current.getContext('2d');
@@ -150,7 +188,13 @@ export const compressImage = (dataUrl, callback) => {
   img.src = dataUrl;
 };
 
-export const handleResizeCanvas = (canvasRef, image, position, drawingPaths, setImagePosition) => {
+export const handleResizeCanvas = (
+  canvasRef, 
+  image, 
+  position, 
+  drawingPaths, 
+  setImagePosition
+) => {
   return debounce(() => {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
@@ -197,22 +241,41 @@ export const handleReceivedData = (
 
   switch (data.type) {
     case 'image':
-      handleImageMessage(ctx, data, setImage);
+      handleImageMessage(
+        ctx, 
+        data, 
+        setImage);
       break;
     case 'draw':
-      handleDrawMessage(ctx, data, setSelectedColor, setSelectedWidth, setDrawingPaths);
+      handleDrawMessage(
+        ctx, 
+        data, 
+        setSelectedColor, 
+        setSelectedWidth, 
+        setDrawingPaths
+      );
       break;
     case 'chatMessage':
       handleChatMessage(data, setMessages);
       break;
     case 'erase':
-      handleEraseMessage(canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions);
+      handleEraseMessage(
+        canvasRef, 
+        drawingPaths, 
+        setDrawingPaths, 
+        setSelectedColor, 
+        setCanvasDimensions
+      );
       break;
     case 'image_move':
-      handleImageMoveMessage(canvasRef, data, setPosition, drawingPaths);
+      handleImageMoveMessage(
+        canvasRef, 
+        data, 
+        setPosition, 
+        drawingPaths);
       break;
     default:
-      console.log('Unknown message type:', data.type);
+      console.log('알 수 없는 데이터 타입:', data.type);
   }
 };
 
@@ -225,7 +288,13 @@ const handleImageMessage = (ctx, data, setImage) => {
   img.src = data.image;
 };
 
-const handleDrawMessage = (ctx, data, setSelectedColor, setSelectedWidth, setDrawingPaths) => {
+const handleDrawMessage = (
+  ctx, 
+  data, 
+  setSelectedColor, 
+  setSelectedWidth, 
+  setDrawingPaths
+) => {
   setSelectedColor(data.color);
   setSelectedWidth(data.width);
   setDrawingPaths((prevPaths) => [...prevPaths, data.path]);
@@ -247,8 +316,20 @@ const handleChatMessage = (data, setMessages) => {
   setMessages((messages) => [...messages, data.messages]);
 };
 
-const handleEraseMessage = (canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions) => {
-  undoLastPath(canvasRef, drawingPaths, setDrawingPaths, setSelectedColor, setCanvasDimensions);
+const handleEraseMessage = (
+  canvasRef, 
+  drawingPaths, 
+  setDrawingPaths, 
+  setSelectedColor, 
+  setCanvasDimensions
+) => {
+  undoLastPath(
+    canvasRef, 
+    drawingPaths, 
+    setDrawingPaths, 
+    setSelectedColor, 
+    setCanvasDimensions
+  );
 };
 
 const handleImageMoveMessage = (canvasRef, data, setPosition, drawingPaths) => {
