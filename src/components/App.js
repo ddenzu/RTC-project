@@ -1,12 +1,12 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Route, Routes, useNavigate } from 'react-router-dom';
-import './App.css';
+import '../App.css';
 import Room from './room.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { useQuery } from 'react-query';
-import Modal from 'react-modal';
-import { fetchRoomList, checkRoomPassword } from './utils/dataHandler';
+import { PasswordModal } from './modal.js';
+import { fetchRoomList, checkRoomPassword } from '../utils/dataHandler.js';
 
 const App = () => {
   const [roomName, setRoomName] = useState('');
@@ -100,26 +100,13 @@ const App = () => {
       } />
       <Route path='/room' element={<Room />} />
     </Routes>
-    <Modal
-      isOpen={modalIsOpen}
-      onRequestClose={closeButton}
-      className="modal-content"
-      overlayClassName="modal-overlay"
-      contentLabel="비밀번호 입력"
-      ariaHideApp={false}
-    >
-    <h2 style={{ display: 'flex', justifyContent: 'center' }}>PASSWORD</h2>
-    <div style={{ display: 'flex', justifyContent: 'center' }}>
-      <input
-      style={{outline: 'none'}}
-        type="password"
-        value={roomPassword}
-        onChange={(e) => setRoomPassword(e.target.value)}
-      />
-      <button className='modal-button-submit modal-button' onClick={joinButton}>Join</button>
-      <button className='modal-button-cancel modal-button' onClick={closeButton}>Cancel</button>
-    </div>
-    </Modal>
+    <PasswordModal
+      modalIsOpen={modalIsOpen}
+      closeButton={closeButton}
+      roomPassword={roomPassword}
+      setRoomPassword={setRoomPassword}
+      joinButton={joinButton}
+    />
   </>
   );
 };

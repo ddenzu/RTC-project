@@ -1,13 +1,14 @@
 import React, { useRef, useEffect, useState } from 'react';
-import './App.css';
+import '../App.css';
 import { useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { useWebSocket } from './utils/websocket';
-import { undoLastPath, drawCanvas, updateColor, updateWidth,
-  handleImageClick, handleImageDrag, handlePenClick, handlePenDrag, compressImage,
-  handleReceivedData, handleResizeCanvas, colors  } from './utils/canvas';
-import { sendMessageData, sendImageData, sendImageMoveData, sendDrawData } from './utils/dataHandler';
+import { ManualModal } from './modal.js';
+import { useWebSocket } from '../utils/websocket.js';
+import { undoLastPath, drawCanvas, updateWidth,
+  handleImageClick, handleImageDrag, handlePenClick, handlePenDrag, uploadImage,
+  handleReceivedData, handleResizeCanvas, renderColor  } from '../utils/canvas.js';
+import { sendMessageData, sendImageData, sendImageMoveData, sendDrawData } from '../utils/dataHandler.js';
 
 const Room = () => {
   const location = useLocation();
@@ -21,11 +22,12 @@ const Room = () => {
   const [isDrawing, setIsDrawing] = useState(false);
   const [drawingPaths, setDrawingPaths] = useState([]);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const [selectedColor, setSelectedColor] = useState('black');
+  const [selectedColor, setSelectedColor] = useState('white');
   const [selectedWidth, setSelectedWidth] = useState(2);
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const { newSocket, sendDataToWebSocket, eraseLine } = useWebSocket(state.roomName, state.roomPassword);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const receivedData = (data) => {
     handleReceivedData(
@@ -41,19 +43,6 @@ const Room = () => {
       setPosition,
       drawingPaths
     );
-  };
-
-  const uploadImage = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = () => {
-        compressImage(reader.result, (compressedDataUrl) => { // 이미지 최적화
-          setImage(compressedDataUrl);
-        });
-      };
-      reader.readAsDataURL(file);
-    }
   };
 
   const imageClick = (e) => {
@@ -114,7 +103,6 @@ const Room = () => {
     );
   };
 
-
   const penDrop = () => {
     sendDrawData(
       drawingPaths, 
@@ -142,17 +130,29 @@ const Room = () => {
     }
   }
 
+  const erase = () => {
+    undoLastPath(
+      canvasRef, 
+      drawingPaths, 
+      setDrawingPaths, 
+      setSelectedColor, 
+      setCanvasDimensions
+    );
+    eraseLine();
+  }
+
   const handleKeyDown = (e) => {
     if (e.ctrlKey && e.key === 'z') {
-      undoLastPath(
-        canvasRef, 
-        drawingPaths, 
-        setDrawingPaths, 
-        setSelectedColor, 
-        setCanvasDimensions
-      );
-      eraseLine();
+      erase();
     }
+  };
+
+  const openModal = () => {
+    setIsModalOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsModalOpen(false);
   };
 
   useEffect(() => {
@@ -205,16 +205,6 @@ const Room = () => {
       ctx.lineWidth = selectedWidth;
     }
   };
-  
-  const renderColor = () =>
-    colors.map(({ name, value }) => (
-      <div
-        key={name}
-        className={`color-option ${name} ${selectedColor === value ? 'color-underline' : ''}`}
-        onClick={() => updateColor(canvasRef,value,setSelectedColor)}
-      ></div>
-    )
-  );
 
   return (
     <div className="App" style={{ position: 'relative' }}>
@@ -240,7 +230,7 @@ const Room = () => {
           color: '#fff',
         }} />
       <div className='control-bar'>
-        <input type="file" className='file-select' onChange={uploadImage} />
+        <input type="file" className='file-select' onChange={(e) => uploadImage(e, setImage)} />
         <input
           type="range"
           className='range-select'
@@ -250,12 +240,15 @@ const Room = () => {
           value={selectedWidth}
           onChange={(event) => updateWidth(canvasRef, event.target.value, setSelectedWidth)}
         />
-        <div className="color-selector">{renderColor()}</div>
+        <div className="color-selector">{renderColor(selectedColor, canvasRef, setSelectedColor)}</div>
         <label className="toggle">
           <input type="checkbox" onChange={toggleChange} checked={isToggleActive} />
           <span className="slider"></span>
         </label>
       </div>
+      <button className="fixed-button" onClick={erase}>↩</button>
+      <button className="manual-button" onClick={openModal}>manual</button>
+      <ManualModal isModalOpen={isModalOpen} closeModal={closeModal} />
       <canvas
         ref={canvasRef}
         onMouseDown={isToggleActive ? imageClick : penClick}

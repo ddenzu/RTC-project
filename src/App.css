@@ -112,6 +112,37 @@ body, html {
   bottom: 0;
   z-index: 1;
 }
+.fixed-button {
+  font-size: 20px;
+  font-weight: 600;
+  border-radius: 20px;
+  position: absolute;
+  bottom: 28px;
+  right: 5px;
+  background-color: #888;
+  background-color:  rgba(127, 127, 126, 0.55);
+  color: white;
+  border: none;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+  padding: 5px 8px;
+  cursor: pointer;
+  z-index: 1;
+}
+.manual-button {
+  font-size: 20px;
+  border-radius: 20px;
+  position: absolute;
+  top: 20px;
+  left: 15px;
+  background-color: #888;
+  background-color:  rgba(127, 127, 126, 0.55);
+  color: white;
+  border: none;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  padding: 5px 10px;
+  cursor: pointer;
+  z-index: 1;
+}
 .file-select {
   width: 20%;
   margin: 0 auto;
@@ -189,6 +220,9 @@ body, html {
     width: 50%;
     position: fixed;
   }
+  .fixed-button {
+    right: 19%;
+  }
 }
 @media screen and (max-width: 430px) {
   .roomList {
@@ -199,6 +233,9 @@ body, html {
     width: 70%;
     position: absolute;
     position: fixed;
+  }
+  .fixed-button {
+    right: 3%;
   }
   .file-select {
     position: absolute;
@@ -283,17 +320,19 @@ input:checked + .slider:before {
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 2;
 }
 
 .modal-content {
   background: #2f2f2f;
   color: white;
-  padding: 20px;
+  padding: 10px 20px 20px;
   border-radius: 5px;
   border: 1px solid white;
   width: 80%;
   max-width: 450px; 
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  text-align: center;
   position: relative;
 }
 
@@ -303,6 +342,16 @@ input:checked + .slider:before {
   padding: 5px;
   border: none;
   border-radius: 5px;
+  cursor: pointer;
+}
+.close-button{
+  border-radius: 10px;
+  border: none;
+  background-color: #4CAF50;
+  color: white;
+  padding: 5px 10px;
+  font-weight: 600;
+  font-size: 14px;
   cursor: pointer;
 }
 

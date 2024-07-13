@@ -188,6 +188,19 @@ export const compressImage = (dataUrl, callback) => {
   img.src = dataUrl;
 };
 
+export const uploadImage = (e, setImage) => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = () => {
+      compressImage(reader.result, (compressedDataUrl) => { // 이미지 최적화
+        setImage(compressedDataUrl);
+      });
+    };
+    reader.readAsDataURL(file);
+  }
+};
+
 export const handleResizeCanvas = (
   canvasRef, 
   image, 
@@ -355,3 +368,14 @@ export const colors = [
   { name: 'black', value: 'black' },
   { name: 'white', value: 'white' },
 ];
+
+export const renderColor = (selectedColor, canvasRef, setSelectedColor) =>
+  colors.map(({ name, value }) => (
+    <div
+      key={name}
+      className={`color-option ${name} ${selectedColor === value ? 'color-underline' : ''}`}
+      onClick={() => updateColor(canvasRef, value, setSelectedColor)}
+    ></div>
+  )
+);
+

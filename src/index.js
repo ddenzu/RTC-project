@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
-import App from './App';
+import App from './components/App';
 import { BrowserRouter } from 'react-router-dom'; // BrowserRouter 추가
 import { QueryClient, QueryClientProvider } from "react-query"  //1번
 const queryClient = new QueryClient()   //2번
