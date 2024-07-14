@@ -16,7 +16,7 @@ const App = () => {
   const navigate = useNavigate(); 
   const { data: roomList, isLoading } = useQuery('roomList', fetchRoomList);
 
-  const newRoomButton = async () => {
+  const makeNewRoom = async () => {
     if (!roomName || !roomPassword) {
       alert(!roomName ? '방 제목을 지정해 주세요.' : '비밀번호를 지정해 주세요.');
       return;
@@ -24,15 +24,15 @@ const App = () => {
     navigate('/room', { state: { roomName, roomPassword } });
   };
 
-  const joinRoom = (roomName) => { // 비밀번호 입력 전
+  const chooseRoom = (roomName) => { // 비밀번호 입력 전
     setTempRoomName(roomName);
     setModalIsOpen(true);
   };
 
-  const joinButton = async () => { // 비밀번호 입력 후
+  const handleRoomJoin = async () => { // 비밀번호 입력 후
     try {
-      const checkPassword = await checkRoomPassword(tempRoomName, roomPassword);
-      if (checkPassword) {
+      const verifyPassword = await checkRoomPassword(tempRoomName, roomPassword);
+      if (verifyPassword) {
         setModalIsOpen(false);
         navigate('/room', { state: { roomName: tempRoomName, roomPassword } });
       } else {
@@ -76,7 +76,7 @@ const App = () => {
                     placeholder="비밀번호 설정"
                   />
                 </div>
-                <button style={{ padding: '5px', height: '65px' }} onClick={newRoomButton}>NewRoom</button>
+                <button style={{ padding: '5px', height: '65px' }} onClick={makeNewRoom}>NewRoom</button>
               </div>
             </div>
             <h2>- Room List -</h2>
@@ -88,7 +88,7 @@ const App = () => {
               roomList && Object.keys(roomList).map((key, index) => (
                 <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '7px' }} key={index}>
                   방제: {key}, 참가자: {roomList[key].count} 명
-                  <button style={{ marginLeft: '15px' }} onClick={() => joinRoom(key)}>Join</button>
+                  <button style={{ marginLeft: '15px' }} onClick={() => chooseRoom(key)}>Join</button>
                 </div>
               ))
             )}
@@ -105,7 +105,7 @@ const App = () => {
       closeButton={closeButton}
       roomPassword={roomPassword}
       setRoomPassword={setRoomPassword}
-      joinButton={joinButton}
+      joinButton={handleRoomJoin}
     />
   </>
   );
