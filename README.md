@@ -1,70 +1,45 @@
-# Getting Started with Create React App
+# WebSocket Chat (공유 그림판)
+프론트엔드 코드 레파지토리입니다.<br>
+Node.js + Express + React + Socket.io
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## 🖥️ 프로젝트 소개
+간단한 소통을 위해 그림판을 공유할 수 있는 웹사이트입니다.
+<br>
 
-## Available Scripts
+## 📌 개요
+### 🌎 배포 주소
+ - https://websocket-chat-ddenzu.koyeb.app/
 
-In the project directory, you can run:
+### 🕰️ 개발 시작일
+ - 24.02.14일
 
-### `npm start`
+### 🧑‍🤝‍🧑 맴버구성
+ - 1인 개인 프로젝트
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### ⚙️ 개발 환경
+- `Node.js v20.10.0`
+- **IDE** : Visual Studio Code
+- **Framework** : Express(4.19.2)
+- **Frontend** : React
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
-
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
-
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+## 📌 주요 기능
+#### 방 생성 및 참가
+- 제목과 비밀번호를 설정하여 방 생성
+- Socket.io 의 네임스페이스를 사용하여 방을 분리하고 상태를 관리
+- React Query 를 사용하여 방 리스트 실시간 업데이트
+- 비밀번호를 입력 시 서버에서 검증
+#### 공유 기능
+- 클라이언트에서 특정 행위가 끝나는 시점에 생성된 데이터를 웹소켓을 통해 서버로 보냄
+- 서버에서 같은 네임스페이스에 연결된 클라이언트로 데이터를 방출
+- 다른 클라이언트는 데이터를 받는 동시에 Canvas 가 업데이트 됨
+#### 같은 방에 입장 시 공유되는 동작
+- 선 그리기
+- 선 굵기 조절
+- 선 색상 변경
+- 선 지우기
+- 이미지 파일 첨부
+- 이미지 파일 위치 변경
+  
+## 🌎 배포
+#### Koyeb
+- Koyeb 과 websocketChat0 레파지토리를 연동하여 배포
