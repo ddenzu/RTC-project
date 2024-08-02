@@ -1,54 +1,26 @@
-import React, { useState } from 'react';
-import { Route, Routes, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { Route, Routes } from 'react-router-dom';
 import '../App.css';
 import Room from './room.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { useQuery } from 'react-query';
-import { PasswordModal } from './modal.js';
-import { fetchRoomList, checkRoomPassword } from '../utils/dataHandler.js';
+import { PasswordModal } from './modals/passwordModal.js';
+import { useEntrance } from '../hooks/useEntrance.js'
 
 const App = () => {
-  const [roomName, setRoomName] = useState('');
-  const [roomPassword, setRoomPassword] = useState('');
-  const [modalIsOpen, setModalIsOpen] = useState(false);
-  const [tempRoomName, setTempRoomName] = useState('');
-  const navigate = useNavigate(); 
-  const { data: roomList, isLoading } = useQuery('roomList', fetchRoomList);
-
-  const makeNewRoom = async () => {
-    if (!roomName || !roomPassword) {
-      alert(!roomName ? '방 제목을 지정해 주세요.' : '비밀번호를 지정해 주세요.');
-      return;
-    }
-    navigate('/room', { state: { roomName, roomPassword } });
-  };
-
-  const chooseRoom = (roomName) => { // 비밀번호 입력 전
-    setTempRoomName(roomName);
-    setModalIsOpen(true);
-  };
-
-  const handleRoomJoin = async () => { // 비밀번호 입력 후
-    try {
-      const verifyPassword = await checkRoomPassword(tempRoomName, roomPassword);
-      if (verifyPassword) {
-        setModalIsOpen(false);
-        navigate('/room', { state: { roomName: tempRoomName, roomPassword } });
-      } else {
-        alert('비밀번호가 틀렸습니다.');
-        setRoomPassword(''); 
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      alert('서버 오류가 발생했습니다.');
-    }
-  };
-
-  const closeButton = () => {
-    setModalIsOpen(false);
-    setRoomPassword(''); 
-  };
+  const {
+    roomName,
+    setRoomName,
+    roomPassword,
+    setRoomPassword,
+    modalIsOpen,
+    roomList,
+    isLoading,
+    makeNewRoom,
+    chooseRoom,
+    handleRoomJoin,
+    closeButton
+  } = useEntrance();
 
   return (
     <>

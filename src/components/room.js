@@ -1,210 +1,38 @@
-import React, { useRef, useEffect, useState } from 'react';
+import React from 'react';
 import '../App.css';
-import { useLocation } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { ManualModal } from './modal.js';
-import { useWebSocket } from '../utils/websocket.js';
-import { undoLastPath, drawCanvas, updateWidth,
-  handleImageClick, handleImageDrag, handlePenClick, handlePenDrag, uploadImage,
-  handleReceivedData, handleResizeCanvas, renderColor  } from '../utils/canvas.js';
-import { sendMessageData, sendImageData, sendImageMoveData, sendDrawData } from '../utils/dataHandler.js';
-
+import { ManualModal } from './modals/manualModal.js';
+import { updateWidth,uploadImage,renderColor  } from '../utils/canvas.js';
+import { sendMessageData } from '../services/api.js';
+import {useRoom} from '../hooks/useRoom'; 
 const Room = () => {
-  const location = useLocation();
-  const { state } = location;
-  const canvasRef = useRef(null);
-  const [image, setImage] = useState(null);
-  const [isDragging, setIsDragging] = useState(false);
-  const [position, setPosition] = useState({ x: 0, y: 0 }); // 이미지 파일의 좌표
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isToggleActive, setIsToggleActive] = useState(false);
-  const [isDrawing, setIsDrawing] = useState(false);
-  const [drawingPaths, setDrawingPaths] = useState([]);
-  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
-  const [selectedColor, setSelectedColor] = useState('white');
-  const [selectedWidth, setSelectedWidth] = useState(2);
-  const [messages, setMessages] = useState([]);
-  const [inputMessage, setInputMessage] = useState('');
-  const { newSocket, sendDataToWebSocket, eraseLine } = useWebSocket(state.roomName, state.roomPassword);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-
-  const receivedData = (data) => {
-    handleReceivedData(
+    const {
       canvasRef,
-      data,
       setImage,
-      setMessages,
-      setSelectedColor,
-      setSelectedWidth,
-      setDrawingPaths,
-      undoLastPath,
-      setCanvasDimensions,
-      setPosition,
-      drawingPaths
-    );
-  };
-
-  const imageClick = (e) => {
-    handleImageClick(
-      canvasRef, 
-      isToggleActive, 
-      setIsDragging, 
-      setMousePosition, 
-      e
-    );
-  }
-
-  const imageDrag = (e) => {
-    handleImageDrag(
-      canvasRef,
-      position,
-      isDragging, 
       isToggleActive,
-      drawingPaths,
-      image,
-      setPosition,
-      setMousePosition,
-      mousePosition,
-      e
-    );
-  }
-
-  const imageDrop = (e) => {
-    sendImageMoveData(
-      image, 
-      position, 
+      selectedColor,
+      setSelectedColor,
+      selectedWidth,
+      setSelectedWidth,
+      messages,
+      setMessages,
+      inputMessage,
+      setInputMessage,
+      isModalOpen,
+      imageClick,
+      imageDrag,
+      imageDrop,
+      penClick,
+      penDrag,
+      penDrop,
+      toggleChange,
+      handleKeyPress,
+      erase,
+      openModal,
+      closeModal,
       sendDataToWebSocket
-    );
-    setIsDragging(false);
-  }
-
-  const penClick = (e) => {
-    handlePenClick(
-      canvasRef, 
-      selectedColor, 
-      setSelectedColor, 
-      selectedWidth, 
-      setSelectedWidth, 
-      setIsDrawing, 
-      drawingPaths, 
-      setDrawingPaths,
-      e
-    );
-  }
-
-  const penDrag = (e) => {
-    handlePenDrag(
-      canvasRef, 
-      isDrawing, 
-      drawingPaths, 
-      setDrawingPaths,
-      e
-    );
-  };
-
-  const penDrop = () => {
-    sendDrawData(
-      drawingPaths, 
-      selectedColor, 
-      selectedWidth, 
-      sendDataToWebSocket
-    );
-    setIsDrawing(false);
-  };
-
-  const toggleChange = () => {
-    setIsToggleActive(!isToggleActive);
-    if (!isToggleActive) {
-      setIsDragging(false);
-    }
-  };
-
-  const handleKeyPress = (e) => {
-    if (e.key == 'Enter'){
-      sendMessageData(
-        inputMessage, 
-        setMessages, 
-        setInputMessage, 
-        sendDataToWebSocket);
-    }
-  }
-
-  const erase = () => {
-    undoLastPath(
-      canvasRef, 
-      drawingPaths, 
-      setDrawingPaths, 
-      setSelectedColor, 
-      setCanvasDimensions
-    );
-    eraseLine();
-  }
-
-  const handleKeyDown = (e) => {
-    if (e.ctrlKey && e.key === 'z') {
-      erase();
-    }
-  };
-
-  const openModal = () => {
-    setIsModalOpen(true);
-  };
-
-  const closeModal = () => {
-    setIsModalOpen(false);
-  };
-
-  useEffect(() => {
-    if (!newSocket) return;
-    newSocket.on('message', receivedData);
-
-    return () => {
-      newSocket.off('message', receivedData);
-    };
-  }, [newSocket, receivedData]);
-
-  useEffect(() => {
-    const resizeCanvas = handleResizeCanvas(canvasRef, image, position, drawingPaths, setImagePosition);
-    window.addEventListener('resize', resizeCanvas);
-
-    return () => {
-      window.removeEventListener('resize', resizeCanvas);
-    };
-  }, [image, drawingPaths, imagePosition]);
-
-  useEffect(() => { // 이미지가 처음 생성됐을 때
-    if (image!==null) {
-      sendImageData(image, sendDataToWebSocket);
-    }
-    setCanvasDimensions();
-  }, [image])
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-    };
-  }, [drawingPaths]);
-
-  const setCanvasDimensions = () => { // 함수 종속 때문에 일단 메인컴포넌트에 유지
-    const canvas = canvasRef.current;
-    const ctx = canvas.getContext('2d');
-    const { innerWidth, innerHeight } = window;
-    canvas.width = innerWidth;
-    canvas.height = innerHeight;
-    if (image) {
-      const img = new Image();
-      img.onload = () => {
-        drawCanvas(ctx, img, position, drawingPaths);
-      };
-      img.src = image;
-    } else {
-      ctx.lineCap = 'round';
-      ctx.strokeStyle = selectedColor;
-      ctx.lineWidth = selectedWidth;
-    }
-  };
+    } = useRoom();
 
   return (
     <div className="App" style={{ position: 'relative' }}>

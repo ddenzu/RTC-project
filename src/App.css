@@ -336,6 +336,11 @@ input:checked + .slider:before {
   position: relative;
 }
 
+.warn {
+  color:#f44336;
+  font-size: 14px;
+}
+
 .modal-button {
   display: flex;
   justify-content: space-between;
