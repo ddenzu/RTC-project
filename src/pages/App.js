@@ -4,7 +4,7 @@ import '../App.css';
 import Room from './room.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner } from '@fortawesome/free-solid-svg-icons';
-import { PasswordModal } from './modals/passwordModal.js';
+import { PasswordModal } from '../components/modals/passwordModal.js';
 import { useEntrance } from '../hooks/useEntrance.js'
 
 const App = () => {

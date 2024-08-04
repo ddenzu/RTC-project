@@ -1,11 +1,10 @@
 import React from 'react';
 import '../App.css';
-import { ToastContainer } from 'react-toastify';
-import 'react-toastify/dist/ReactToastify.css';
-import { ManualModal } from './modals/manualModal.js';
+import { ParticipantToast } from '../components/ui/toastContainer';
+import { ManualModal } from '../components/modals/manualModal.js';
 import { updateWidth,uploadImage,renderColor  } from '../utils/canvas.js';
 import { sendMessageData } from '../services/api.js';
-import {useRoom} from '../hooks/useRoom'; 
+import { useRoom } from '../hooks/useRoom.js'; 
 const Room = () => {
     const {
       canvasRef,
@@ -52,11 +51,7 @@ const Room = () => {
         />
         <button onClick={() => sendMessageData(inputMessage, setMessages, setInputMessage, sendDataToWebSocket)}>Send</button> 
       </div>
-      <ToastContainer 
-        toastStyle={{
-          backgroundColor: 'rgba(51, 51, 51, 0.7)',
-          color: '#fff',
-        }} />
+      <ParticipantToast />
       <div className='control-bar'>
         <input type="file" className='file-select' onChange={(e) => uploadImage(e, setImage)} />
         <input

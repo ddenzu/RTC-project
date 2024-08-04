@@ -37,7 +37,7 @@ export const sendDrawData = (drawingPaths, selectedColor, selectedWidth, sendDat
 };
 
 export const fetchRoomList = async () => {
-    const response = await fetch('http://192.168.219.108:8080/api/data');
+    const response = await fetch('/api/data');
     if (!response.ok) {
       throw new Error('방목록 가져오기 실패');
     }
@@ -45,7 +45,7 @@ export const fetchRoomList = async () => {
 };
   
 export const checkRoomPassword = async (roomName, roomPassword) => {
-    const response = await fetch('http://192.168.219.108:8080/api/checkPassword', {
+    const response = await fetch('/api/checkPassword', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ roomName, roomPassword }),

@@ -6,7 +6,7 @@ export const useWebSocket = (roomName, roomPassword, ) => {
   const [newSocket, setNewSocket] = useState(null);
 
   useEffect(() => {
-    const socket = io(`http://192.168.219.108:8080/room`, {
+    const socket = io(`/room`, {
       query: {
         room: roomName,
         password: roomPassword
