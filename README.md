@@ -36,9 +36,14 @@ Node.js + Express + React + Socket.io
 - 선 그리기
 - 선 굵기 조절
 - 선 색상 변경
+![ezgif com-optimize](https://github.com/user-attachments/assets/7c49d390-855d-41e4-b252-ad4eff7c49d6)
+  
 - 선 지우기
+![ezgif com-optimize (3)](https://github.com/user-attachments/assets/f4a17e73-1f19-441f-b13e-bb32dd632d01)
+  
 - 이미지 파일 첨부
 - 이미지 파일 위치 변경
+![ezgif com-optimize (1)](https://github.com/user-attachments/assets/b7b2dcda-7923-4420-ba71-c0c44cb3b785)
   
 ## 🌎 배포
 #### Koyeb
